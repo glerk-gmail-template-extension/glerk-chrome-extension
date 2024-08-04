@@ -5,6 +5,7 @@ import EmptyTemplate from "./EmptyTemplate";
 export default function TemplateGroupPopup({
   templateGroups,
   serachTemplate,
+  onEnterKeyDown,
   handleTemplateSelect,
 }) {
   return (
@@ -16,6 +17,7 @@ export default function TemplateGroupPopup({
           autoComplete="off"
           onClick={(event) => event.stopPropagation()}
           onInput={(event) => serachTemplate(event.target.value)}
+          onKeyDown={onEnterKeyDown}
           className="w-full p-1.5 pl-7 border text-gray-600 border-gray-200 rounded-lg text-sm outline-none"
         />
         <span className="absolute top-5 left-5 text-gray-400">

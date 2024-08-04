@@ -7,21 +7,47 @@ import { applyTemplate, extractVariables } from "../../utils/templateVariable";
 
 export default function IconButton({ emailEditorId }) {
   const [showPopup, setShowPopup] = useState(false);
-  const [templateGroups, setTemplateGroups] = useState([]);
   const textColor = showPopup ? "text-primary" : "text-gray-600";
+
+  const handleIconButtonClick = () => {
+    setShowPopup(!showPopup);
+  };
+
+  const [templateGroups, setTemplateGroups] = useState([]);
+  const [prevSearchNameLength, setPrevSearchNameLength] = useState(0);
 
   const serachTemplate = async (templateName) => {
     const groups = await fetchGroups(templateName);
     setTemplateGroups(groups);
   };
 
+  const handleEnterKeyDown = (event) => {
+    if (event.key === "Enter") {
+      serachTemplate(event.target.value);
+    }
+  };
+
+  const handleTemplateNameInput = async (templateName) => {
+    const currentSearchNameLength = templateName.length;
+
+    if (currentSearchNameLength !== prevSearchNameLength) {
+      if (currentSearchNameLength === 0) {
+        await serachTemplate();
+      } else if (currentSearchNameLength > prevSearchNameLength) {
+        await serachTemplate(
+          templateName.substring(0, currentSearchNameLength - 1),
+        );
+      } else {
+        await serachTemplate(templateName);
+      }
+    }
+
+    setPrevSearchNameLength(currentSearchNameLength);
+  };
+
   useEffect(() => {
     serachTemplate();
   }, []);
-
-  const handleIconButtonClick = () => {
-    setShowPopup(!showPopup);
-  };
 
   const [showModal, setShowModal] = useState(false);
   const [template, setTemplate] = useState({});
@@ -95,7 +121,8 @@ export default function IconButton({ emailEditorId }) {
       {showPopup && (
         <TemplateGroupPopup
           templateGroups={templateGroups}
-          serachTemplate={serachTemplate}
+          serachTemplate={handleTemplateNameInput}
+          onEnterKeyDown={handleEnterKeyDown}
           handleTemplateSelect={handleTemplateSelect}
         />
       )}
