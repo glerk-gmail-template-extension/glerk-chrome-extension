@@ -9,6 +9,13 @@ export default {
         sans: ["Pretendard", ...defaultTheme.fontFamily.sans],
         roboto: ["Roboto Slab", "serif"],
       },
+      colors: {
+        primary: "#2c9f73",
+        "dark-primary": "#249168",
+      },
+      width: {
+        140: "35rem",
+      },
     },
   },
 };
