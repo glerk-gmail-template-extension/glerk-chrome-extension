@@ -1,4 +1,8 @@
 import defaultTheme from "tailwindcss/defaultTheme";
+import {
+  scopedPreflightStyles,
+  isolateInsideOfContainer,
+} from "tailwindcss-scoped-preflight";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -18,4 +22,9 @@ export default {
       },
     },
   },
+  plugins: [
+    scopedPreflightStyles({
+      isolationStrategy: isolateInsideOfContainer(".glerk-template"),
+    }),
+  ],
 };
