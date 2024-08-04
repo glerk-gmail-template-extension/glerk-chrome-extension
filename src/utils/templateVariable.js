@@ -103,11 +103,12 @@ const enterEvent = new KeyboardEvent("keydown", {
   cancelable: true,
 });
 
-export const applyTemplate = (toolbarId, template) => {
-  const $target =
-    document.querySelector(`div[aria-labelledby='${toolbarId}']`) || document;
+export const applyTemplate = (emailEditorId, template) => {
+  const $emailEditor =
+    document.querySelector(`div[aria-labelledby='${emailEditorId}']`) ||
+    document;
 
-  const $emailInputs = $target.querySelector(
+  const $emailInputs = $emailEditor.querySelector(
     "div[role='region'] table[role='presentation'] form",
   );
 
@@ -139,7 +140,7 @@ export const applyTemplate = (toolbarId, template) => {
     });
   });
 
-  const $body = $target.querySelector(
+  const $body = $emailEditor.querySelector(
     "div[g_editable='true'][role='textbox'][contenteditable='true']",
   );
 

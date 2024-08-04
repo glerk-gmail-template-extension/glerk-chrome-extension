@@ -17,9 +17,9 @@ const observer = new MutationObserver((mutations) => {
         );
 
         $mailContainers.forEach(($mailContainer) => {
-          const containerId = $mailContainer.getAttribute("aria-labelledby");
+          const emailEditorId = $mailContainer.getAttribute("aria-labelledby");
 
-          if (containerId === null) return;
+          if (emailEditorId === null) return;
 
           const $toolbar = $mailContainer.querySelector(
             "table[role='presentation'] table tbody table[role='group'] tbody tr",
@@ -35,7 +35,7 @@ const observer = new MutationObserver((mutations) => {
 
             ReactDOM.createRoot($iconButton).render(
               <React.StrictMode>
-                <App containerId={containerId} />
+                <App emailEditorId={emailEditorId} />
               </React.StrictMode>,
             );
           }

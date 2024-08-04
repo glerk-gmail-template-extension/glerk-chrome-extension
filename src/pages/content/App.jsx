@@ -5,7 +5,7 @@ import ModalWrapper from "../../components/ModalWrapper";
 import VariableInputContainer from "../../components/VariableInputContainer";
 import { applyTemplate, extractVariables } from "../../utils/templateVariable";
 
-export default function IconButton({ containerId }) {
+export default function IconButton({ emailEditorId }) {
   const [showPopup, setShowPopup] = useState(false);
   const [templateGroups, setTemplateGroups] = useState([]);
   const textColor = showPopup ? "text-primary" : "text-gray-600";
@@ -44,7 +44,7 @@ export default function IconButton({ containerId }) {
       setTemplateVariables(variables);
       openModal();
     } else {
-      applyTemplate(containerId, result);
+      applyTemplate(emailEditorId, result);
     }
   };
 
@@ -69,7 +69,7 @@ export default function IconButton({ containerId }) {
     templateData.body = body;
     templateData.subject = subject;
 
-    applyTemplate(containerId, templateData);
+    applyTemplate(emailEditorId, templateData);
     setTemplate({});
     closeModal();
   };
