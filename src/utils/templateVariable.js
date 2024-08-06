@@ -94,55 +94,12 @@ export const extractVariables = (template) => {
   }, {});
 };
 
-const enterEvent = new KeyboardEvent("keydown", {
-  key: "Enter",
-  keyCode: 13,
-  code: "Enter",
-  which: 13,
-  bubbles: true,
-  cancelable: true,
-});
-
-export const applyTemplate = (emailEditorId, template) => {
-  const $emailEditor =
-    document.querySelector(`div[aria-labelledby='${emailEditorId}']`) ||
-    document;
-
-  const $emailInputs = $emailEditor.querySelector(
-    "div[role='region'] table[role='presentation'] form",
-  );
-
-  const templateItems = [
-    template.recipients,
-    template.ccList,
-    template.bccList,
-    [template.subject],
-  ];
-
-  const $emailButtons = $emailInputs.querySelectorAll("span[role='link']");
-
-  $emailButtons.forEach(($emailOpenButton) => {
-    if ($emailOpenButton.parentElement.tagName.toLocaleLowerCase() === "span") {
-      $emailOpenButton.click();
-    }
+export const fillTemplateWithVariables = (template, templateVariables) => {
+  Object.keys(templateVariables).forEach((key) => {
+    const regex = new RegExp(`\\[\\{${key}\\}\\]`, "g");
+    template.body = template.body.replace(regex, templateVariables[key]);
+    template.subject = template.subject.replace(regex, templateVariables[key]);
   });
 
-  const $inputFields = $emailInputs.querySelectorAll(
-    'input:not([type="hidden"])',
-  );
-
-  $inputFields.forEach(($input, index) => {
-    templateItems[index].forEach((item) => {
-      if (item) {
-        $input.value = item;
-        $input.dispatchEvent(enterEvent);
-      }
-    });
-  });
-
-  const $body = $emailEditor.querySelector(
-    "div[g_editable='true'][role='textbox'][contenteditable='true']",
-  );
-
-  $body.innerHTML += template.body;
+  return template;
 };

@@ -1,16 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
 import TemplateGroupPopup from "../../components/TemplateGroupPopup";
-import { fetchGroups, fetchTemplate } from "../../utils/api";
 import ModalWrapper from "../../components/ModalWrapper";
 import VariableInputContainer from "../../components/VariableInputContainer";
-import { applyTemplate, extractVariables } from "../../utils/templateVariable";
+import HashtagList from "../../components/HashtagList";
+
+import { fetchGroups, fetchTemplate } from "../../utils/api";
+import { applyTemplate, storeCurrentCursor } from "../../utils/template";
+import {
+  extractVariables,
+  fillTemplateWithVariables,
+} from "../../utils/templateVariable";
+import { getHashtagListPosition } from "../../utils/hashtag";
 
 export default function IconButton({ emailEditorId }) {
   const [showPopup, setShowPopup] = useState(false);
   const textColor = showPopup ? "text-primary" : "text-gray-600";
+  const cursorRef = useRef(null);
 
-  const handleIconButtonClick = () => {
-    setShowPopup(!showPopup);
+  const handleTemplateMouseDown = () => {
+    storeCurrentCursor(cursorRef);
   };
 
   const [templateGroups, setTemplateGroups] = useState([]);
@@ -52,6 +62,9 @@ export default function IconButton({ emailEditorId }) {
   const [showModal, setShowModal] = useState(false);
   const [template, setTemplate] = useState({});
   const [templateVariables, setTemplateVariables] = useState({});
+  const [hashtagKeyword, setHashtagKeyword] = useState("");
+  const isHashtagMode =
+    hashtagKeyword.length > 1 && hashtagKeyword.startsWith("#");
 
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
@@ -60,6 +73,7 @@ export default function IconButton({ emailEditorId }) {
     if (!templateId) return;
 
     setShowPopup(false);
+    setHashtagKeyword("");
 
     const result = await fetchTemplate(templateId);
     setTemplate(result);
@@ -70,7 +84,7 @@ export default function IconButton({ emailEditorId }) {
       setTemplateVariables(variables);
       openModal();
     } else {
-      applyTemplate(emailEditorId, result);
+      applyTemplate(emailEditorId, result, cursorRef);
     }
   };
 
@@ -82,23 +96,66 @@ export default function IconButton({ emailEditorId }) {
   };
 
   const handleVariableApply = () => {
-    let { body } = template;
-    let { subject } = template;
+    const filledTemplate = fillTemplateWithVariables(
+      { ...template },
+      templateVariables,
+      emailEditorId,
+    );
 
-    Object.keys(templateVariables).forEach((key) => {
-      const regex = new RegExp(`\\[\\{${key}\\}\\]`, "g");
-      body = body.replace(regex, templateVariables[key]);
-      subject = subject.replace(regex, templateVariables[key]);
-    });
-
-    const templateData = template;
-    templateData.body = body;
-    templateData.subject = subject;
-
-    applyTemplate(emailEditorId, templateData);
+    applyTemplate(emailEditorId, filledTemplate, cursorRef);
     setTemplate({});
     closeModal();
   };
+
+  const [hashtagPosition, setHashtagPosition] = useState({
+    left: 0,
+    top: 0,
+  });
+
+  const showHashtagList = () => {
+    const { left, top } = getHashtagListPosition(emailEditorId);
+
+    setHashtagPosition({ left, top });
+  };
+
+  const handleHashtagInput = (event) => {
+    const { inputType, data } = event;
+
+    if (inputType === "insertText") {
+      if (data === "#") {
+        setHashtagKeyword("#");
+        showHashtagList();
+      } else if (data === " " || data === null) {
+        setHashtagKeyword("");
+      } else {
+        setHashtagKeyword((prev) => prev + data);
+      }
+    } else if (inputType === "deleteContentBackward") {
+      setHashtagKeyword((prev) => prev.substring(0, prev.length - 1));
+    } else if (inputType === "insertParagraph") {
+      setHashtagKeyword("");
+    }
+  };
+
+  useEffect(() => {
+    const $editorContainer = document.querySelector(
+      `div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`,
+    );
+
+    const $editor = $editorContainer?.querySelector(
+      "div[g_editable='true'][role='textbox'][contenteditable='true']",
+    );
+
+    if ($editor) {
+      $editor.addEventListener("input", handleHashtagInput);
+    }
+
+    return () => {
+      if ($editor) {
+        $editor.removeEventListener("input", handleHashtagInput);
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -106,7 +163,8 @@ export default function IconButton({ emailEditorId }) {
         className={`flex justify-center ml-2.5 cursor-pointer ${textColor} hover:text-primary`}
         data-tooltip="Glerk 템플릿 추가"
         aria-label="Glerk 템플릿 추가"
-        onClick={handleIconButtonClick}
+        onClick={() => setShowPopup(!showPopup)}
+        onMouseDown={handleTemplateMouseDown}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -135,6 +193,19 @@ export default function IconButton({ emailEditorId }) {
           />
         </ModalWrapper>
       )}
+      {isHashtagMode &&
+        createPortal(
+          <HashtagList
+            hashtagKeyword={hashtagKeyword}
+            hashtagPosition={hashtagPosition}
+            onTemplateClick={handleTemplateSelect}
+            onTemplateMouseDown={handleTemplateMouseDown}
+            cursorRef={cursorRef}
+          />,
+          document.querySelector(
+            `div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`,
+          ),
+        )}
     </>
   );
 }
