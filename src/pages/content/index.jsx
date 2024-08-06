@@ -17,7 +17,10 @@ const observer = new MutationObserver((mutations) => {
         );
 
         $mailContainers.forEach(($mailContainer) => {
-          const emailEditorId = $mailContainer.getAttribute("aria-labelledby");
+          const emailEditorId =
+            $mailContainer.getAttribute("role") === "dialog"
+              ? $mailContainer.getAttribute("aria-labelledby")
+              : $mailContainer.id;
 
           if (emailEditorId === null) return;
 
@@ -28,14 +31,16 @@ const observer = new MutationObserver((mutations) => {
           if ($toolbar && !$toolbar.querySelector(".template-button")) {
             const $iconButton = document.createElement("td");
 
-            $iconButton.classList.add("glerk-template");
-            $iconButton.classList.add("relative");
-            $iconButton.classList.add("template-button");
+            $iconButton.classList.add(
+              "glerk-template",
+              "relative",
+              "template-button",
+            );
             $toolbar.children[0].insertAdjacentElement("afterend", $iconButton);
 
             ReactDOM.createRoot($iconButton).render(
               <React.StrictMode>
-                <App emailEditorId={emailEditorId} />
+                <App emailEditorId={CSS.escape(emailEditorId)} />
               </React.StrictMode>,
             );
           }
