@@ -8,9 +8,7 @@ export default function GroupList({ templateGroups, handleTemplateSelect }) {
       {templateGroups.map((group) => {
         return (
           <React.Fragment key={group.id}>
-            <li className="my-1 truncate text-sm text-light">
-              {`📂 ${group.name}`}
-            </li>
+            <li className="my-1 text-sm truncate">{`📂 ${group.name}`}</li>
             {group.templates.length > 0 && (
               <TemplateList
                 templates={group.templates}
