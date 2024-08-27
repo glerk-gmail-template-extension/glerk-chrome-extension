@@ -183,8 +183,18 @@ host_permissions 필드에 도메인을 지정할 경우 익스텐션에서 서�
 
 <br />
 
+<details>
+  <summary>로그인 프로세스 초기 설계 기록</summary>
+  <div align="center">
+    <img style="width: 50%" src="./github/login_flow.jpg" alt="login flow" />
+    <p>🔼 Google OAuth 인증을 통한 로그인 프로세스</p>
+  </div>
+</details>
+
+<br />
+
 <div align="center">
-  <img style="width: 50%" src="./github/login_flow.jpg" alt="login flow" />
+  <img style="width: 50%" src="./github/login_flow_edit.png" alt="login flow" />
   <p>🔼 Google OAuth 인증을 통한 로그인 프로세스</p>
 </div>
 
@@ -295,7 +305,7 @@ createPortal은 리액트 컴포넌트를 DOM 트리의 다른 부분에 렌더�
 이를 해결하기 위해 window 창 기준의 좌표를 지메일 에디터 기준으로 변환하는 로직을 개발했습니다.
 
 <div align="center">
-  <img style="width: 600px" src="./github/caret_position.jpg" alt="컴포넌트 위치 계산 로직" />
+  <img style="width: 600px" src="./github/reposition.png" alt="컴포넌트 위치 계산 로직" />
   <p>🔼 좌표 기준을 지메일 에디터 기준으로 변환</p>
 </div>
 
