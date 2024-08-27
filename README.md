@@ -194,7 +194,7 @@ host_permissions 필드에 도메인을 지정할 경우 익스텐션에서 서�
 <br />
 
 <div align="center">
-  <img style="width: 50%" src="./github/login_flow_edit.png" alt="login flow" />
+  <img style="width: 60%" src="./github/login_flow_edit.png" alt="login flow" />
   <p>🔼 Google OAuth 인증을 통한 로그인 프로세스</p>
 </div>
 
