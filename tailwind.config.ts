@@ -1,10 +1,7 @@
+import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
-import {
-  scopedPreflightStyles,
-  isolateInsideOfContainer,
-} from "tailwindcss-scoped-preflight";
+import { scopedPreflightStyles, isolateInsideOfContainer } from "tailwindcss-scoped-preflight";
 
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -27,4 +24,4 @@ export default {
       isolationStrategy: isolateInsideOfContainer(".glerk-template"),
     }),
   ],
-};
+} satisfies Config;

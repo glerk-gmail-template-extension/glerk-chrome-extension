@@ -1,4 +1,11 @@
+dist
+
+.eslintrc.cjs
+postcss.config.js
+
 *.css
 *.html
-src/utils/api.js
-src/pages/background/index.js
+*.spec.tsx
+
+src/utils/api.ts
+src/pages/background/index.ts
