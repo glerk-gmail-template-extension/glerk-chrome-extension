@@ -1,30 +1,38 @@
-export const getHashtagListPosition = (emailEditorId) => {
+import { MutableRefObject } from "react";
+import { CursorRef, Position } from "../types";
+
+const POPUP_SIZE = { width: 176, height: 212 };
+
+export const getHashtagListPosition = (emailEditorId: string): Position | null => {
   const selection = window.getSelection();
+  if (!selection) return null;
+
   const range = selection.getRangeAt(0);
   const rect = range.getBoundingClientRect();
 
   const $editorContainer = document.querySelector(
     `div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`,
-  );
+  )!;
   const editorRect = $editorContainer.getBoundingClientRect();
 
   const top = rect.bottom - editorRect.top + 5;
   const left = rect.left - editorRect.left;
 
-  const popupSize = { width: 176, height: 212 };
-
-  if (rect.bottom + popupSize.height >= window.innerHeight) {
-    return { left: left - popupSize.width - 10, top: top - 120 };
+  if (rect.bottom + POPUP_SIZE.height >= window.innerHeight) {
+    return { left: left - POPUP_SIZE.width - 10, top: top - 120 };
   }
 
-  if (rect.left + popupSize.width >= window.innerWidth) {
-    return { left: left - popupSize.width - 10, top };
+  if (rect.left + POPUP_SIZE.width >= window.innerWidth) {
+    return { left: left - POPUP_SIZE.width - 10, top };
   }
 
   return { left, top };
 };
 
-export const deleteHashtagBeforeCaret = (cursorRef, hashtagKeyword) => {
+export const deleteHashtagBeforeCaret = (
+  cursorRef: MutableRefObject<CursorRef>,
+  hashtagKeyword: string,
+) => {
   const selection = cursorRef.current;
 
   if (selection.rangeCount > 0) {
@@ -34,10 +42,7 @@ export const deleteHashtagBeforeCaret = (cursorRef, hashtagKeyword) => {
 
     const deleteRange = document.createRange();
 
-    deleteRange.setStart(
-      startContainer,
-      Math.max(0, start - hashtagKeyword.length),
-    );
+    deleteRange.setStart(startContainer, Math.max(0, start - hashtagKeyword.length));
     deleteRange.setEnd(startContainer, start);
     deleteRange.deleteContents();
 

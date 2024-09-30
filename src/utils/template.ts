@@ -1,3 +1,6 @@
+import { MutableRefObject } from "react";
+import { CursorRef, Template } from "../types";
+
 const enterEvent = new KeyboardEvent("keydown", {
   key: "Enter",
   keyCode: 13,
@@ -7,13 +10,14 @@ const enterEvent = new KeyboardEvent("keydown", {
   cancelable: true,
 });
 
-const insertTextAtCursor = ($editor, body, cursorRef) => {
+const insertTextAtCursor = (
+  $editor: HTMLElement,
+  body: string,
+  cursorRef: MutableRefObject<CursorRef>,
+) => {
   const selection = cursorRef.current;
 
-  if (
-    selection?.rangeCount > 0 &&
-    $editor.contains(selection.range.commonAncestorContainer)
-  ) {
+  if (selection?.rangeCount > 0 && $editor.contains(selection.range.commonAncestorContainer)) {
     const { range } = selection;
     range.deleteContents();
 
@@ -37,32 +41,38 @@ const insertTextAtCursor = ($editor, body, cursorRef) => {
   }
 };
 
-export const applyTemplate = (emailEditorId, template, cursorRef) => {
+export const applyTemplate = (
+  emailEditorId: string,
+  template: Template,
+  cursorRef: MutableRefObject<CursorRef>,
+) => {
   const $emailEditor =
-    document.querySelector(
-      `div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`,
-    ) || document;
+    document.querySelector(`div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`) ||
+    document;
 
-  const $emailInputs = $emailEditor.querySelector(
+  const $emailInputs: HTMLFormElement = $emailEditor.querySelector(
     "div[role='region'] table[role='presentation'] form",
-  );
+  )!;
 
-  const templateItems = [
+  const templateItems: string[][] = [
     template.recipients,
     template.ccList,
     template.bccList,
     [template.subject],
   ];
 
-  const $emailButtons = $emailInputs.querySelectorAll("span[role='link']");
+  const $emailButtons: NodeListOf<HTMLElement> = $emailInputs.querySelectorAll("span[role='link']");
 
-  $emailButtons.forEach(($emailOpenButton) => {
-    if ($emailOpenButton.parentElement.tagName.toLocaleLowerCase() === "span") {
+  $emailButtons.forEach(($emailOpenButton: HTMLElement) => {
+    if (
+      $emailOpenButton.parentElement &&
+      $emailOpenButton.parentElement.tagName.toLocaleLowerCase() === "span"
+    ) {
       $emailOpenButton.click();
     }
   });
 
-  const $inputFields = $emailInputs.querySelectorAll(
+  const $inputFields: NodeListOf<HTMLInputElement> = $emailInputs.querySelectorAll(
     'input:not([type="hidden"])',
   );
 
@@ -75,17 +85,19 @@ export const applyTemplate = (emailEditorId, template, cursorRef) => {
     });
   });
 
-  const $editor = $emailEditor.querySelector(
+  const $editor: HTMLElement | null = $emailEditor.querySelector(
     "div[g_editable='true'][role='textbox'][contenteditable='true']",
   );
 
-  insertTextAtCursor($editor, template.body, cursorRef);
+  if ($editor) {
+    insertTextAtCursor($editor, template.body, cursorRef);
+  }
 };
 
-export const storeCurrentCursor = (cursorRef) => {
+export const storeCurrentCursor = (cursorRef: MutableRefObject<CursorRef>) => {
   const selection = window.getSelection();
 
-  if (selection.rangeCount > 0) {
+  if (selection && selection.rangeCount > 0) {
     cursorRef.current = {
       rangeCount: selection.rangeCount,
       range: selection.getRangeAt(0).cloneRange(),

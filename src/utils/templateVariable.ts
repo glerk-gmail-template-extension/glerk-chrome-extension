@@ -1,6 +1,7 @@
+import { Template, TemplateVariable } from "../types";
 import DATE_FORMAT from "./constants";
 
-export const getVariableValue = (variable) => {
+export const getVariableValue = (variable: string) => {
   const locale = undefined;
 
   const today = new Date();
@@ -9,17 +10,11 @@ export const getVariableValue = (variable) => {
 
   switch (variable) {
     case "month.last":
-      return new Date(year, month - 1).toLocaleDateString(
-        locale,
-        DATE_FORMAT.MONTH,
-      );
+      return new Date(year, month - 1).toLocaleDateString(locale, DATE_FORMAT.MONTH);
     case "month.this":
       return new Date().toLocaleDateString(locale, DATE_FORMAT.MONTH);
     case "month.next":
-      return new Date(year, month + 1).toLocaleDateString(
-        locale,
-        DATE_FORMAT.MONTH,
-      );
+      return new Date(year, month + 1).toLocaleDateString(locale, DATE_FORMAT.MONTH);
     case "date.today.long":
       return new Date().toLocaleDateString(locale, DATE_FORMAT.LONG);
     case "date.today.short":
@@ -69,18 +64,13 @@ export const getVariableValue = (variable) => {
   }
 };
 
-export const extractVariables = (template) => {
-  const { subject } = template;
-  const { body } = template;
+export const extractVariables = (template: Template) => {
+  const { subject, body } = template;
 
   const regex = /\[\{([^}]+)\}\]/g;
-  const matches = new Set();
+  const matches = new Set<string>();
 
-  for (
-    let match = regex.exec(subject);
-    match !== null;
-    match = regex.exec(subject)
-  ) {
+  for (let match = regex.exec(subject); match !== null; match = regex.exec(subject)) {
     matches.add(match[1]);
   }
 
@@ -88,13 +78,16 @@ export const extractVariables = (template) => {
     matches.add(match[1]);
   }
 
-  return Array.from(matches).reduce((acc, cur) => {
+  return Array.from(matches).reduce<TemplateVariable>((acc, cur) => {
     acc[cur] = getVariableValue(cur);
     return acc;
   }, {});
 };
 
-export const fillTemplateWithVariables = (template, templateVariables) => {
+export const fillTemplateWithVariables = (
+  template: Template,
+  templateVariables: TemplateVariable,
+): Template => {
   Object.keys(templateVariables).forEach((key) => {
     const regex = new RegExp(`\\[\\{${key}\\}\\]`, "g");
     template.body = template.body.replace(regex, templateVariables[key]);

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 
 import axios from "../../utils/axiosInstance";
+
+import { User } from "../../types";
+
 import profileSrc from "../../assets/images/profile.png";
 
 const CLIENT_URL = import.meta.env.VITE_CLIENT_URL;
 
 export default function Popup() {
-  const [user, setUser] = useState({
+  const [user, setUser] = useState<User | null>({
     username: "",
     profileUrl: "",
     email: "",
@@ -18,6 +21,7 @@ export default function Popup() {
         const { data } = await axios.get("/v1/user");
         setUser(data);
       } catch (error) {
+        console.error(error);
         setUser(null);
       }
     };
@@ -26,10 +30,12 @@ export default function Popup() {
   }, []);
 
   const handleLoadImageError = () => {
-    setUser({
-      ...user,
-      profileUrl: profileSrc,
-    });
+    if (user) {
+      setUser({
+        ...user,
+        profileUrl: profileSrc,
+      });
+    }
   };
 
   const handleLogoutClick = async () => {
@@ -42,12 +48,12 @@ export default function Popup() {
   };
 
   return (
-    <div className="glerk-template w-60 p-4">
+    <div className="p-4 glerk-template w-60">
       {user ? (
         <>
           <div className="flex items-center justify-between mb-4">
             <button
-              className="font-roboto font-bold text-xl select-none cursor-pointer"
+              className="text-xl font-bold cursor-pointer select-none font-roboto"
               onClick={openWebPage}
             >
               Glerk
@@ -65,7 +71,7 @@ export default function Popup() {
           <div className="flex">
             <div className="me-4 shrink-0">
               <img
-                className="w-9 h-9 rounded-full ml-2"
+                className="ml-2 rounded-full w-9 h-9"
                 src={user.profileUrl}
                 onError={handleLoadImageError}
                 alt="profile"
@@ -75,15 +81,13 @@ export default function Popup() {
               <p className="mb-1 text-base font-semibold leading-none text-gray-800">
                 {user.username}
               </p>
-              <p className="mb-3 text-sm font-normal text-gray-500">
-                {user.email}
-              </p>
+              <p className="mb-3 text-sm font-normal text-gray-500">{user.email}</p>
             </div>
           </div>
         </>
       ) : (
         <div className="flex items-center justify-between">
-          <h1 className="font-roboto font-bold text-xl">Glerk</h1>
+          <h1 className="text-xl font-bold font-roboto">Glerk</h1>
           <div>
             <button
               type="button"

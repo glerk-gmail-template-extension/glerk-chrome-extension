@@ -8,45 +8,51 @@ import HashtagList from "../../components/HashtagList";
 
 import { fetchGroups, fetchTemplate } from "../../utils/api";
 import { applyTemplate, storeCurrentCursor } from "../../utils/template";
-import {
-  extractVariables,
-  fillTemplateWithVariables,
-} from "../../utils/templateVariable";
+import { extractVariables, fillTemplateWithVariables } from "../../utils/templateVariable";
 import { getHashtagListPosition } from "../../utils/hashtag";
 
-export default function IconButton({ emailEditorId }) {
-  const [showPopup, setShowPopup] = useState(false);
+import { CursorRef, Group, Template, TemplateVariable } from "../../types";
+
+type IconButtonProps = {
+  emailEditorId: string;
+};
+
+export default function IconButton({ emailEditorId }: IconButtonProps) {
+  const [showPopup, setShowPopup] = useState<boolean>(false);
   const textColor = showPopup ? "text-primary" : "text-gray-600";
-  const cursorRef = useRef(null);
+  const cursorRef = useRef<CursorRef>({
+    rangeCount: 0,
+    range: document.createRange(),
+    removeAllRanges: () => {},
+    addRange: () => {},
+  });
 
   const handleTemplateMouseDown = () => {
     storeCurrentCursor(cursorRef);
   };
 
-  const [templateGroups, setTemplateGroups] = useState([]);
+  const [templateGroups, setTemplateGroups] = useState<Group[]>([]);
   const [prevSearchNameLength, setPrevSearchNameLength] = useState(0);
 
-  const serachTemplate = async (templateName) => {
+  const serachTemplate = async (templateName?: string) => {
     const groups = await fetchGroups(templateName);
     setTemplateGroups(groups);
   };
 
-  const handleEnterKeyDown = (event) => {
+  const handleEnterKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      serachTemplate(event.target.value);
+      serachTemplate(event.currentTarget.value);
     }
   };
 
-  const handleTemplateNameInput = async (templateName) => {
+  const handleTemplateNameInput = async (templateName: string) => {
     const currentSearchNameLength = templateName.length;
 
     if (currentSearchNameLength !== prevSearchNameLength) {
       if (currentSearchNameLength === 0) {
         await serachTemplate();
       } else if (currentSearchNameLength > prevSearchNameLength) {
-        await serachTemplate(
-          templateName.substring(0, currentSearchNameLength - 1),
-        );
+        await serachTemplate(templateName.substring(0, currentSearchNameLength - 1));
       } else {
         await serachTemplate(templateName);
       }
@@ -60,16 +66,15 @@ export default function IconButton({ emailEditorId }) {
   }, []);
 
   const [showModal, setShowModal] = useState(false);
-  const [template, setTemplate] = useState({});
-  const [templateVariables, setTemplateVariables] = useState({});
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [templateVariables, setTemplateVariables] = useState<TemplateVariable>({});
   const [hashtagKeyword, setHashtagKeyword] = useState("");
-  const isHashtagMode =
-    hashtagKeyword.length > 1 && hashtagKeyword.startsWith("#");
+  const isHashtagMode = hashtagKeyword.length > 1 && hashtagKeyword.startsWith("#");
 
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
 
-  const handleTemplateSelect = async (templateId) => {
+  const handleTemplateSelect = async (templateId: number) => {
     if (!templateId) return;
 
     setShowPopup(false);
@@ -88,7 +93,7 @@ export default function IconButton({ emailEditorId }) {
     }
   };
 
-  const handleInput = (name, value) => {
+  const handleInput = (name: string, value: string) => {
     setTemplateVariables({
       ...templateVariables,
       [name]: value,
@@ -96,14 +101,12 @@ export default function IconButton({ emailEditorId }) {
   };
 
   const handleVariableApply = () => {
-    const filledTemplate = fillTemplateWithVariables(
-      { ...template },
-      templateVariables,
-      emailEditorId,
-    );
+    if (!template) return;
+
+    const filledTemplate = fillTemplateWithVariables(template, templateVariables);
 
     applyTemplate(emailEditorId, filledTemplate, cursorRef);
-    setTemplate({});
+    setTemplate(null);
     closeModal();
   };
 
@@ -113,12 +116,16 @@ export default function IconButton({ emailEditorId }) {
   });
 
   const showHashtagList = () => {
-    const { left, top } = getHashtagListPosition(emailEditorId);
+    const position = getHashtagListPosition(emailEditorId);
 
-    setHashtagPosition({ left, top });
+    if (position) {
+      setHashtagPosition({ ...position });
+    }
   };
 
-  const handleHashtagInput = (event) => {
+  const handleHashtagInput = (event: Event) => {
+    if (!(event instanceof InputEvent)) return;
+
     const { inputType, data } = event;
 
     if (inputType === "insertText") {
@@ -144,7 +151,7 @@ export default function IconButton({ emailEditorId }) {
 
     const $editor = $editorContainer?.querySelector(
       "div[g_editable='true'][role='textbox'][contenteditable='true']",
-    );
+    ) as HTMLDivElement | null;
 
     if ($editor) {
       $editor.addEventListener("input", handleHashtagInput);
@@ -189,7 +196,7 @@ export default function IconButton({ emailEditorId }) {
           <VariableInputContainer
             variables={templateVariables}
             handleInput={handleInput}
-            ApplyVariable={handleVariableApply}
+            applyVariable={handleVariableApply}
           />
         </ModalWrapper>
       )}
@@ -202,9 +209,8 @@ export default function IconButton({ emailEditorId }) {
             onTemplateMouseDown={handleTemplateMouseDown}
             cursorRef={cursorRef}
           />,
-          document.querySelector(
-            `div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`,
-          ),
+          document.querySelector(`div[aria-labelledby='${emailEditorId}'],
+             #${emailEditorId}`)!,
         )}
     </>
   );

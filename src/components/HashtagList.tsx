@@ -1,7 +1,17 @@
-import { useEffect, useState } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
 
 import { fetchTemplatesWithHashtag } from "../utils/api";
 import { deleteHashtagBeforeCaret } from "../utils/hashtag";
+
+import { CursorRef, Template } from "../types";
+
+type HashtagListProps = {
+  hashtagKeyword: string;
+  hashtagPosition: { top: number; left: number };
+  onTemplateClick: (id: number) => void;
+  onTemplateMouseDown: () => void;
+  cursorRef: MutableRefObject<CursorRef>;
+};
 
 export default function HashtagList({
   hashtagKeyword,
@@ -9,11 +19,11 @@ export default function HashtagList({
   onTemplateClick,
   onTemplateMouseDown,
   cursorRef,
-}) {
-  const [templateList, setTemplateList] = useState([]);
+}: HashtagListProps) {
+  const [templateList, setTemplateList] = useState<Template[]>([]);
 
   useEffect(() => {
-    const fetchTemplate = async (keyword) => {
+    const fetchTemplate = async (keyword: string) => {
       const data = await fetchTemplatesWithHashtag(keyword);
       setTemplateList(data);
     };
