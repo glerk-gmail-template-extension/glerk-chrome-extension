@@ -16,7 +16,7 @@ export const fetchTemplate = (templateId: number): Promise<Template> => {
   });
 };
 
-export const fetchGroups = (templateName?: string): Promise<Group[]> => {
+export const fetchGroups = (templateName: string): Promise<Group[]> => {
   return new Promise((resolve, reject) => {
     try {
       chrome.runtime.sendMessage({ action: "fetchGroups", templateName }, (response) => {

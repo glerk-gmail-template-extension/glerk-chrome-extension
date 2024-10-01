@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { debounce } from "lodash";
 
 import TemplateGroupPopup from "../../components/TemplateGroupPopup";
 import ModalWrapper from "../../components/ModalWrapper";
@@ -19,7 +20,6 @@ type IconButtonProps = {
 
 export default function IconButton({ emailEditorId }: IconButtonProps) {
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const textColor = showPopup ? "text-primary" : "text-gray-600";
   const cursorRef = useRef<CursorRef>({
     rangeCount: 0,
     range: document.createRange(),
@@ -27,52 +27,31 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
     addRange: () => {},
   });
 
-  const handleTemplateMouseDown = () => {
-    storeCurrentCursor(cursorRef);
+  const handleTemplateMouseDown = () => storeCurrentCursor(cursorRef);
+
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  const searchGroupsByTemplateName = async (templateName: string) => {
+    setGroups(await fetchGroups(templateName));
   };
 
-  const [templateGroups, setTemplateGroups] = useState<Group[]>([]);
-  const [prevSearchNameLength, setPrevSearchNameLength] = useState(0);
+  const debouncedSearch = debounce(searchGroupsByTemplateName, 300);
 
-  const serachTemplate = async (templateName?: string) => {
-    const groups = await fetchGroups(templateName);
-    setTemplateGroups(groups);
-  };
-
-  const handleEnterKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      serachTemplate(event.currentTarget.value);
-    }
-  };
-
-  const handleTemplateNameInput = async (templateName: string) => {
-    const currentSearchNameLength = templateName.length;
-
-    if (currentSearchNameLength !== prevSearchNameLength) {
-      if (currentSearchNameLength === 0) {
-        await serachTemplate();
-      } else if (currentSearchNameLength > prevSearchNameLength) {
-        await serachTemplate(templateName.substring(0, currentSearchNameLength - 1));
-      } else {
-        await serachTemplate(templateName);
-      }
-    }
-
-    setPrevSearchNameLength(currentSearchNameLength);
+  const handleTemplateNameInput = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newTemplateName = event.target.value;
+    debouncedSearch(newTemplateName);
   };
 
   useEffect(() => {
-    serachTemplate();
+    searchGroupsByTemplateName("");
   }, []);
 
   const [showModal, setShowModal] = useState(false);
   const [template, setTemplate] = useState<Template | null>(null);
   const [templateVariables, setTemplateVariables] = useState<TemplateVariable>({});
   const [hashtagKeyword, setHashtagKeyword] = useState("");
-  const isHashtagMode = hashtagKeyword.length > 1 && hashtagKeyword.startsWith("#");
 
-  const openModal = () => setShowModal(true);
-  const closeModal = () => setShowModal(false);
+  const isHashtagMode = hashtagKeyword.length > 1 && hashtagKeyword.startsWith("#");
 
   const handleTemplateSelect = async (templateId: number) => {
     if (!templateId) return;
@@ -87,7 +66,7 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
 
     if (Object.keys(variables).length > 0) {
       setTemplateVariables(variables);
-      openModal();
+      setShowModal(true);
     } else {
       applyTemplate(emailEditorId, result, cursorRef);
     }
@@ -107,7 +86,7 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
 
     applyTemplate(emailEditorId, filledTemplate, cursorRef);
     setTemplate(null);
-    closeModal();
+    setShowModal(false);
   };
 
   const [hashtagPosition, setHashtagPosition] = useState({
@@ -167,7 +146,7 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
   return (
     <>
       <button
-        className={`flex justify-center ml-2.5 cursor-pointer ${textColor} hover:text-primary`}
+        className={`flex justify-center ml-2.5 cursor-pointer ${showPopup ? "text-primary" : "text-gray-600"} hover:text-primary`}
         data-tooltip="Glerk 템플릿 추가"
         aria-label="Glerk 템플릿 추가"
         onClick={() => setShowPopup(!showPopup)}
@@ -185,14 +164,13 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
       </button>
       {showPopup && (
         <TemplateGroupPopup
-          templateGroups={templateGroups}
-          serachTemplate={handleTemplateNameInput}
-          onEnterKeyDown={handleEnterKeyDown}
-          handleTemplateSelect={handleTemplateSelect}
+          groups={groups}
+          onTemplateNameInput={handleTemplateNameInput}
+          onTemplateSelect={handleTemplateSelect}
         />
       )}
       {showModal && (
-        <ModalWrapper onModalClose={closeModal}>
+        <ModalWrapper onModalClose={() => setShowModal(false)}>
           <VariableInputContainer
             variables={templateVariables}
             handleInput={handleInput}

@@ -5,14 +5,14 @@ import TemplateList from "./TemplateList";
 import { Group } from "../types";
 
 type GroupList = {
-  templateGroups: Group[];
+  groups: Group[];
   onTemplateSelect: (id: number) => void;
 };
 
-export default function GroupList({ templateGroups, onTemplateSelect }: GroupList) {
+export default function GroupList({ groups, onTemplateSelect }: GroupList) {
   return (
     <ul className="text-sm text-gray-400 font-normal p-2.5 px-4">
-      {templateGroups.map((group) => {
+      {groups.map((group) => {
         return (
           <React.Fragment key={group.id}>
             <li className="my-1 text-sm truncate">{`📂 ${group.name}`}</li>
