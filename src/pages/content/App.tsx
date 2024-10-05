@@ -1,26 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { debounce } from "lodash";
 
 import TemplateGroupPopup from "@/components/TemplateGroupPopup";
 import ModalWrapper from "@/components/ModalWrapper";
 import VariableInputContainer from "@/components/VariableInputContainer";
 import HashtagList from "@/components/HashtagList";
 
-import { fetchGroups, fetchTemplate } from "@/utils/api";
+import { fetchTemplate } from "@/utils/api";
 import { applyTemplate, storeCurrentCursor } from "@/utils/template";
 import { extractVariables, fillTemplateWithVariables } from "@/utils/templateVariable";
 import { getHashtagListPosition } from "@/utils/hashtag";
 import { EDITOR_PATH } from "@/utils/constants";
 
-import { CursorRef, Group, Position, Template, TemplateVariable } from "@/types";
+import { CursorRef, Position, Template, TemplateVariable } from "@/types";
 
 type IconButtonProps = {
-  emailEditorId: string;
+  editorId: string;
 };
 
-export default function IconButton({ emailEditorId }: IconButtonProps) {
-  const [showPopup, setShowPopup] = useState<boolean>(false);
+export default function IconButton({ editorId }: IconButtonProps) {
+  const [showPopup, setShowPopup] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [templateVariables, setTemplateVariables] = useState<TemplateVariable>({});
+  const [hashtagKeyword, setHashtagKeyword] = useState("");
+  const [hashtagPosition, setHashtagPosition] = useState<Position>({ left: 0, top: 0 });
+
   const cursorRef = useRef<CursorRef>({
     rangeCount: 0,
     range: document.createRange(),
@@ -28,31 +33,9 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
     addRange: () => {},
   });
 
-  const handleTemplateMouseDown = () => storeCurrentCursor(cursorRef);
-
-  const [groups, setGroups] = useState<Group[]>([]);
-
-  const searchGroupsByTemplateName = async (templateName: string) => {
-    setGroups(await fetchGroups(templateName));
-  };
-
-  const debouncedSearch = debounce(searchGroupsByTemplateName, 300);
-
-  const handleTemplateNameInput = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newTemplateName = event.target.value;
-    debouncedSearch(newTemplateName);
-  };
-
-  useEffect(() => {
-    searchGroupsByTemplateName("");
-  }, []);
-
-  const [showModal, setShowModal] = useState(false);
-  const [template, setTemplate] = useState<Template | null>(null);
-  const [templateVariables, setTemplateVariables] = useState<TemplateVariable>({});
-  const [hashtagKeyword, setHashtagKeyword] = useState("");
-
   const isHashtagMode = hashtagKeyword.length > 1 && hashtagKeyword.startsWith("#");
+
+  const handleTemplateMouseDown = () => storeCurrentCursor(cursorRef);
 
   const handleTemplateSelect = async (templateId: number) => {
     if (!templateId) return;
@@ -69,15 +52,15 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
       setTemplateVariables(variables);
       setShowModal(true);
     } else {
-      applyTemplate(emailEditorId, result, cursorRef);
+      applyTemplate(editorId, result, cursorRef);
     }
   };
 
   const handleInput = (name: string, value: string) => {
-    setTemplateVariables({
-      ...templateVariables,
+    setTemplateVariables((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   const handleVariableApply = () => {
@@ -85,25 +68,12 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
 
     const filledTemplate = fillTemplateWithVariables(template, templateVariables);
 
-    applyTemplate(emailEditorId, filledTemplate, cursorRef);
+    applyTemplate(editorId, filledTemplate, cursorRef);
     setTemplate(null);
     setShowModal(false);
   };
 
-  const [hashtagPosition, setHashtagPosition] = useState({
-    left: 0,
-    top: 0,
-  });
-
-  const showHashtagList = () => {
-    const position = getHashtagListPosition(emailEditorId);
-
-    if (position) {
-      setHashtagPosition({ ...position });
-    }
-  };
-
-  const handleHashtagInput = (event: Event) => {
+  const handleHashtagInput = useCallback((event: Event) => {
     if (!(event instanceof InputEvent)) return;
 
     const { inputType, data } = event;
@@ -111,38 +81,39 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
     if (inputType === "insertText") {
       if (data === "#") {
         setHashtagKeyword("#");
-        showHashtagList();
+
+        const position = getHashtagListPosition(editorId);
+
+        if (position) {
+          setHashtagPosition({ ...position });
+        }
       } else if (data === " " || data === null) {
         setHashtagKeyword("");
       } else {
         setHashtagKeyword((prev) => prev + data);
       }
-    } else if (inputType === "deleteContentBackward") {
+
+      return;
+    }
+
+    if (inputType === "deleteContentBackward") {
       setHashtagKeyword((prev) => prev.substring(0, prev.length - 1));
     } else if (inputType === "insertParagraph") {
       setHashtagKeyword("");
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const $editorContainer = document.querySelector(
-      `div[aria-labelledby='${emailEditorId}'], #${emailEditorId}`,
-    );
+    const editorSelector = `div[aria-labelledby='${editorId}'], #${editorId}`;
+    const $editorContainer = document.querySelector(editorSelector);
+    const $editor = $editorContainer?.querySelector(EDITOR_PATH) as HTMLDivElement | null;
 
-    const $editor = $editorContainer?.querySelector(
-      "div[g_editable='true'][role='textbox'][contenteditable='true']",
-    ) as HTMLDivElement | null;
-
-    if ($editor) {
-      $editor.addEventListener("input", handleHashtagInput);
-    }
+    if ($editor) $editor.addEventListener("input", handleHashtagInput);
 
     return () => {
-      if ($editor) {
-        $editor.removeEventListener("input", handleHashtagInput);
-      }
+      if ($editor) $editor.removeEventListener("input", handleHashtagInput);
     };
-  }, []);
+  }, [handleHashtagInput]);
 
   return (
     <>
@@ -163,13 +134,7 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
           <path d="M21.41,5h-4.41V.59l4.41,4.41Zm-5.41,13H8v-6h8v6Zm6-11V24H2V3C2,1.34,3.34,0,5,0H15V7h7Zm-16,0h5v-2H6v2Zm12,3H6v10h12V10Z" />
         </svg>
       </button>
-      {showPopup && (
-        <TemplateGroupPopup
-          groups={groups}
-          onTemplateNameInput={handleTemplateNameInput}
-          onTemplateSelect={handleTemplateSelect}
-        />
-      )}
+      {showPopup && <TemplateGroupPopup onTemplateSelect={handleTemplateSelect} />}
       {showModal && (
         <ModalWrapper onModalClose={() => setShowModal(false)}>
           <VariableInputContainer
@@ -188,8 +153,8 @@ export default function IconButton({ emailEditorId }: IconButtonProps) {
             onTemplateMouseDown={handleTemplateMouseDown}
             cursorRef={cursorRef}
           />,
-          document.querySelector(`div[aria-labelledby='${emailEditorId}'],
-             #${emailEditorId}`)!,
+          document.querySelector(`div[aria-labelledby='${editorId}'],
+             #${editorId}`)!,
         )}
     </>
   );

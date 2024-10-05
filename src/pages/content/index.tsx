@@ -34,7 +34,7 @@ const observer = new MutationObserver((mutations) => {
 
             ReactDOM.createRoot($iconButton).render(
               <React.StrictMode>
-                <App emailEditorId={CSS.escape(emailEditorId)} />
+                <App editorId={CSS.escape(emailEditorId)} />
               </React.StrictMode>,
             );
           }
