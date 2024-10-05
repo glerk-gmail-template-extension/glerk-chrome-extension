@@ -1,4 +1,4 @@
-import { TemplateVariable } from "../types";
+import { TemplateVariable } from "@/types";
 import VariableInput from "./VariableInput";
 
 type VariableInputContainerProps = {

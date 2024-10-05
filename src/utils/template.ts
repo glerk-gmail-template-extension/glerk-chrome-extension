@@ -1,5 +1,5 @@
 import { MutableRefObject } from "react";
-import { CursorRef, Template } from "../types";
+import { CursorRef, Template } from "@/types";
 
 const enterEvent = new KeyboardEvent("keydown", {
   key: "Enter",

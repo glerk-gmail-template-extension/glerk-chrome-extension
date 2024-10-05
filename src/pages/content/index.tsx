@@ -1,12 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
+import { EMIAL_WINDOW_PATH, TOOLBAR_PATH } from "@/utils/constants";
 import App from "./App";
 
-import "../../index.css";
-
-const toolbarPath = "table[role='presentation'] table tbody table[role='group'] tbody tr";
-const emailEditorPath = "div[role='dialog'], div[role='region']";
+import "@/index.css";
 
 const createIconButton = () => {
   const $iconButton = document.createElement("td");
@@ -17,8 +15,8 @@ const createIconButton = () => {
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     mutation.addedNodes.forEach((node) => {
-      if (node instanceof Element && node.querySelector(emailEditorPath)) {
-        const $mailContainers = document.querySelectorAll(emailEditorPath);
+      if (node instanceof Element && node.querySelector(EMIAL_WINDOW_PATH)) {
+        const $mailContainers = document.querySelectorAll(EMIAL_WINDOW_PATH);
 
         $mailContainers.forEach(($mailContainer) => {
           const emailEditorId =
@@ -28,7 +26,7 @@ const observer = new MutationObserver((mutations) => {
 
           if (emailEditorId === null) return;
 
-          const $toolbar = $mailContainer.querySelector(toolbarPath);
+          const $toolbar = $mailContainer.querySelector(TOOLBAR_PATH);
 
           if ($toolbar && !$toolbar.querySelector(".template-button")) {
             const $iconButton = createIconButton();

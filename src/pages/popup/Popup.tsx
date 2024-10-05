@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
 
-import axios from "../../utils/axiosInstance";
+import axios from "@/utils/axiosInstance";
 
-import { User } from "../../types";
+import { User } from "@/types";
 
-import profileSrc from "../../assets/images/profile.png";
+import profileSrc from "@/assets/images/profile.png";
 
 const CLIENT_URL = import.meta.env.VITE_CLIENT_URL;
 
 export default function Popup() {
-  const [user, setUser] = useState<User | null>({
-    username: "",
-    profileUrl: "",
-    email: "",
-  });
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {

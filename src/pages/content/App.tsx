@@ -2,17 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { debounce } from "lodash";
 
-import TemplateGroupPopup from "../../components/TemplateGroupPopup";
-import ModalWrapper from "../../components/ModalWrapper";
-import VariableInputContainer from "../../components/VariableInputContainer";
-import HashtagList from "../../components/HashtagList";
+import TemplateGroupPopup from "@/components/TemplateGroupPopup";
+import ModalWrapper from "@/components/ModalWrapper";
+import VariableInputContainer from "@/components/VariableInputContainer";
+import HashtagList from "@/components/HashtagList";
 
-import { fetchGroups, fetchTemplate } from "../../utils/api";
-import { applyTemplate, storeCurrentCursor } from "../../utils/template";
-import { extractVariables, fillTemplateWithVariables } from "../../utils/templateVariable";
-import { getHashtagListPosition } from "../../utils/hashtag";
+import { fetchGroups, fetchTemplate } from "@/utils/api";
+import { applyTemplate, storeCurrentCursor } from "@/utils/template";
+import { extractVariables, fillTemplateWithVariables } from "@/utils/templateVariable";
+import { getHashtagListPosition } from "@/utils/hashtag";
+import { EDITOR_PATH } from "@/utils/constants";
 
-import { CursorRef, Group, Template, TemplateVariable } from "../../types";
+import { CursorRef, Group, Position, Template, TemplateVariable } from "@/types";
 
 type IconButtonProps = {
   emailEditorId: string;

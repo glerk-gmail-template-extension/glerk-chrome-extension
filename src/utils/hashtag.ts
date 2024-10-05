@@ -1,5 +1,5 @@
 import { MutableRefObject } from "react";
-import { CursorRef, Position } from "../types";
+import { CursorRef, Position } from "@/types";
 
 const POPUP_SIZE = { width: 176, height: 212 };
 

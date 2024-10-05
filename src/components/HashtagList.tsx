@@ -1,9 +1,9 @@
 import { MutableRefObject, useEffect, useState } from "react";
 
-import { fetchTemplatesWithHashtag } from "../utils/api";
-import { deleteHashtagBeforeCaret } from "../utils/hashtag";
+import { fetchTemplatesWithHashtag } from "@/utils/api";
+import { deleteHashtagBeforeCaret } from "@/utils/hashtag";
 
-import { CursorRef, Template } from "../types";
+import { CursorRef, Template } from "@/types";
 
 type HashtagListProps = {
   hashtagKeyword: string;

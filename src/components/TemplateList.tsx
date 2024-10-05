@@ -1,4 +1,4 @@
-import { GroupTemplateInfo } from "../types";
+import { GroupTemplateInfo } from "@/types";
 
 type TemplateListProps = {
   templates: GroupTemplateInfo[];

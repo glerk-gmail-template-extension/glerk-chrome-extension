@@ -1,7 +1,7 @@
 /// <reference types="chrome" />
 
 import { AxiosError, AxiosResponse } from "axios";
-import axios from "../../utils/axiosInstance";
+import axios from "@/utils/axiosInstance";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "fetchGroups") {

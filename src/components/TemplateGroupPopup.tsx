@@ -1,8 +1,7 @@
+import { Group } from "@/types";
 import GroupList from "./GroupList";
 import SearchIcon from "./SearchIcon";
 import EmptyTemplate from "./EmptyTemplate";
-
-import { Group } from "../types";
 
 type TemplateGroupPopupProps = {
   groups: Group[];

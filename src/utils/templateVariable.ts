@@ -1,5 +1,5 @@
-import { Template, TemplateVariable } from "../types";
-import DATE_FORMAT from "./constants";
+import { Template, TemplateVariable } from "@/types";
+import { DATE_FORMAT } from "./constants";
 
 export const getVariableValue = (variable: string) => {
   const locale = undefined;

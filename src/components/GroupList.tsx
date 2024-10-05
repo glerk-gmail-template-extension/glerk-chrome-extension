@@ -1,8 +1,7 @@
 import React from "react";
 
+import { Group } from "@/types";
 import TemplateList from "./TemplateList";
-
-import { Group } from "../types";
 
 type GroupList = {
   groups: Group[];

@@ -1,4 +1,4 @@
-import { Group, Template } from "../types";
+import { Group, Template } from "@/types";
 
 export const fetchTemplate = (templateId: number): Promise<Template> => {
   return new Promise((resolve, reject) => {

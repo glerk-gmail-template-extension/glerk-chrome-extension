@@ -14,7 +14,7 @@ type DateFormat = {
   };
 };
 
-const DATE_FORMAT: DateFormat = {
+export const DATE_FORMAT: DateFormat = {
   MONTH: {
     month: "long",
   },
@@ -30,4 +30,6 @@ const DATE_FORMAT: DateFormat = {
   },
 };
 
-export default DATE_FORMAT;
+export const EDITOR_PATH = "div[g_editable='true'][role='textbox'][contenteditable='true']";
+export const TOOLBAR_PATH = "table[role='presentation'] table tbody table[role='group'] tbody tr";
+export const EMIAL_WINDOW_PATH = "div[role='dialog'], div[role='region']";
